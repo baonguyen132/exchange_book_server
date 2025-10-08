@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  flask-app:
+    build: .
+    container_name: exchange_book_server
+    ports:
+      - "5000:5000"         # Map port host:container
+    env_file:
+      - .env                # Load biến môi trường EXCHANGE_BOOK_API_KEY
+    volumes:
+      - .:/app              # Mount code để dễ phát triển (live reload)
+    restart: unless-stopped # Tự restart khi container crash
