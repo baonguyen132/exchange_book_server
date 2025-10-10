@@ -2,15 +2,14 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flasgger import Swagger
 
-# from part_book_handle import book_bp
+from routers.router_book import book_bp
 from routers.router_cart import cart_bp
 from routers.router_transaction import transaction
-from routers.router_tyepBook import typeBook_bp
+from routers.router_tyepBook import type_book_bp
 from routers.router_user import user_bp
 from services.sendEmail import sendMail
 
 from routers.router_image import image_bp
-# from part_tyepBook_handle import typeBook_bp
 
 
 
@@ -119,8 +118,8 @@ def send_otp():
 
 
 app.register_blueprint(image_bp)
-app.register_blueprint(typeBook_bp)
-# app.register_blueprint(book_bp)
+app.register_blueprint(type_book_bp)
+app.register_blueprint(book_bp)
 app.register_blueprint(cart_bp)
 app.register_blueprint(user_bp)
 app.register_blueprint(transaction)

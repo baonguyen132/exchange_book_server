@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 from services.connectDatabase import importData, exportData
 
 # Khởi tạo Blueprint
-typeBook_bp = Blueprint('typeBook', __name__)
+type_book_bp = Blueprint('typeBook', __name__)
 
 # Đường dẫn thư mục lưu trữ ảnh
 PUBLIC_IMAGE_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'public', 'image')
@@ -16,8 +16,7 @@ PUBLIC_IMAGE_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), '
 os.makedirs(PUBLIC_IMAGE_FOLDER, exist_ok=True)
 
 
-
-@typeBook_bp.route('/insertTypeBook', methods=['POST'])
+@type_book_bp.route('/insertTypeBook', methods=['POST'])
 def insertTypeBook():
     """
     Insert new book type
@@ -92,7 +91,7 @@ def insertTypeBook():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-@typeBook_bp.route('/updateTypeBook', methods=['POST'])
+@type_book_bp.route('/updateTypeBook', methods=['POST'])
 def updateTypeBook():
     """
     Update existing book type
@@ -176,7 +175,7 @@ def updateTypeBook():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-@typeBook_bp.route('/deleteTypeBook', methods=['POST'])
+@type_book_bp.route('/deleteTypeBook', methods=['POST'])
 def deleteTypeBook():
     """
     Delete a book type
@@ -226,7 +225,7 @@ def deleteTypeBook():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-@typeBook_bp.route("/exportTypeBook", methods=['GET'])
+@type_book_bp.route("/exportTypeBook", methods=['GET'])
 def exportTypeBook():
     """
     Get all book types
@@ -296,7 +295,7 @@ def exportTypeBook():
         return jsonify({"error": str(e)}), 400
 
 
-@typeBook_bp.route('/public/image/<path:filename>')
+@type_book_bp.route('/public/image/<path:filename>')
 def serve_image(filename):
     """
     Serve book cover images
