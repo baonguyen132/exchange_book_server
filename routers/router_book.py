@@ -16,207 +16,202 @@ PUBLIC_IMAGE_BOOK_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__
 # Tạo thư mục nếu chưa tồn tại
 os.makedirs(PUBLIC_IMAGE_BOOK_FOLDER, exist_ok=True)
 
-# @book_bp.route('/upload_image_book', methods=['POST'])
-# def upload_book():
-#     """
-#     Upload book image and analyze with AI
-#     ---
-#     tags:
-#       - Book Management
-#     consumes:
-#       - multipart/form-data
-#     parameters:
-#       - name: image
-#         in: formData
-#         type: file
-#         required: true
-#         description: Book cover image to upload and analyze
-#     responses:
-#       200:
-#         description: Image uploaded and analyzed successfully
-#         schema:
-#           type: object
-#           properties:
-#             message:
-#               type: string
-#               example: "Upload successful"
-#             data:
-#               type: object
-#               description: Book data from AI analysis
-#             path:
-#               type: string
-#               example: "public/image_book_client/book_cover.jpg"
-#       400:
-#         description: Upload failed
-#         schema:
-#           type: object
-#           properties:
-#             error:
-#               type: string
-#               example: "No image file found"
-#     """
-#     # Kiểm tra file ảnh
-#     if 'image' not in request.files:
-#         return jsonify({"error": "No image file found"}), 400
+@book_bp.route('/upload_image_book', methods=['POST'])
+def upload_book():
+    """
+    Upload book image
+    ---
+    tags:
+      - Book Management
+    consumes:
+      - multipart/form-data
+    parameters:
+      - name: image
+        in: formData
+        type: file
+        required: true
+        description: Book cover image to upload
+    responses:
+      200:
+        description: Image uploaded successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Upload successful"
+            path:
+              type: string
+              example: "public/image_book_client/book_upload_20241010_123456_abc123.jpg"
+              description: "Relative path to uploaded image"
+      400:
+        description: Upload failed
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "No image file found"
+    """
+    try:
+        # Kiểm tra file ảnh
+        if 'image' not in request.files:
+            return jsonify({"error": "No image file found"}), 400
 
-#     image = request.files['image']
+        image = request.files['image']
 
-#     if image.filename == '':
-#         return jsonify({"error": "No selected file"}), 400
+        if image.filename == '':
+            return jsonify({"error": "No selected file"}), 400
 
-#     # Tạo tên file unique với timestamp và uuid
-#     ext = os.path.splitext(image.filename)[1]
-#     new_filename = f"book_upload_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}{ext}"
-    
-#     # Đổi tên file an toàn
-#     filename = secure_filename(new_filename)
-#     image_path = os.path.join(PUBLIC_IMAGE_BOOK_FOLDER, filename)
-#     image.save(image_path)
+        # Validate file extension
+        allowed_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp'}
+        ext = os.path.splitext(image.filename)[1].lower()
+        
+        if ext not in allowed_extensions:
+            return jsonify({"error": "Invalid file type. Allowed: jpg, jpeg, png, gif, bmp"}), 400
 
-#     # AI analysis (commented out until AI module is available)
-#     # text_output = scan_book(image_path)
-#     # book = exportData(
-#     #     sql="SELECT * FROM `type_books` WHERE `id` = %s",
-#     #     val=(text_output,)
-#     # )
-    
-#     # Temporary response without AI
-#     book = {"message": "AI analysis disabled temporarily"}
+        # Tạo tên file unique với timestamp và uuid
+        new_filename = f"book_upload_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}{ext}"
+        
+        # Đổi tên file an toàn
+        filename = secure_filename(new_filename)
+        image_path = os.path.join(PUBLIC_IMAGE_BOOK_FOLDER, filename)
+        image.save(image_path)
 
-#     # Trả về đường dẫn ảnh hợp lệ với relative path
-#     relative_path = f"public/image_book_client/{filename}"
-    
-#     return jsonify({
-#         "message": "Upload successful",
-#         "data": book,
-#         "path": relative_path
-#     }), 200
+        # Trả về đường dẫn ảnh hợp lệ với relative path
+        relative_path = f"public/image_book_client/{filename}"
 
+        name_book = request.form.get('name_book')
 
-# @book_bp.route('/scan_books', methods=['POST'])
-# def scan_books():
-#     """
-#     Scan book image and find matching books
-#     ---
-#     tags:
-#       - Book Management
-#     consumes:
-#       - multipart/form-data
-#     parameters:
-#       - name: image
-#         in: formData
-#         type: file
-#         required: true
-#         description: Book image to scan and match
-#       - name: id
-#         in: formData
-#         type: string
-#         required: true
-#         description: User ID to exclude from results
-#         example: "123"
-#     responses:
-#       200:
-#         description: Books found matching the scanned image
-#         schema:
-#           type: array
-#           items:
-#             type: object
-#             properties:
-#               id:
-#                 type: integer
-#                 example: 1
-#               name_book:
-#                 type: string
-#                 example: "Toán học lớp 12"
-#               type_book:
-#                 type: string
-#                 example: "Sách giáo khoa"
-#               date_purchase:
-#                 type: string
-#                 example: "2024-01-15"
-#               price:
-#                 type: number
-#                 example: 45000
-#               description:
-#                 type: string
-#                 example: "Sách toán cũ, tình trạng tốt"
-#               image:
-#                 type: string
-#                 example: "public/image_book_client/book_123.jpg"
-#               id_user:
-#                 type: integer
-#                 example: 456
-#               id_type_book:
-#                 type: integer
-#                 example: 5
-#               status:
-#                 type: integer
-#                 example: 1
-#               quantity:
-#                 type: integer
-#                 example: 2
-#       400:
-#         description: Scan failed
-#         schema:
-#           type: object
-#           properties:
-#             error:
-#               type: string
-#               example: "No image file found"
-#     """
-#     # Kiểm tra file ảnh
-#     if 'image' not in request.files:
-#         return jsonify({"error": "No image file found"}), 400
+        book = exportData(
+          sql="SELECT * FROM `type_books` WHERE `name_book` LIKE %s",
+          val=(name_book,)
+        )
 
-#     image = request.files['image']
+        return jsonify({
+            "message": "Upload successful",
+            "data": book,
+            "path": relative_path
+        }), 200
 
-#     if image.filename == '':
-#         return jsonify({"error": "No selected file"}), 400
+    except Exception as e:
+        return jsonify({"error": f"Upload failed: {str(e)}"}), 400
 
-#     # Tạo tên file unique
-#     ext = os.path.splitext(image.filename)[1]
-#     new_filename = f"scan_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}{ext}"
-    
-#     # Đổi tên file an toàn và lưu tạm ảnh
-#     filename = secure_filename(new_filename)
-#     image_path = os.path.join(PUBLIC_IMAGE_BOOK_FOLDER, filename)
-#     image.save(image_path)
+@book_bp.route('/scan_books', methods=['POST'])
+def scan_books():
+    """
+    Search books by name
+    ---
+    tags:
+      - Book Management
+    consumes:
+      - application/x-www-form-urlencoded
+    parameters:
+      - name: id
+        in: formData
+        type: string
+        required: true
+        description: User ID to exclude from results
+        example: "123"
+      - name: name_book
+        in: formData
+        type: string
+        required: true
+        description: Book name to search for
+        example: "Toán học lớp 12"
+    responses:
+      200:
+        description: Books found matching the search criteria
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              name_book:
+                type: string
+                example: "Toán học lớp 12"
+              type_book:
+                type: string
+                example: "Sách giáo khoa"
+              date_purchase:
+                type: string
+                example: "2024-01-15"
+              price:
+                type: number
+                example: 45000
+              description:
+                type: string
+                example: "Sách toán cũ, tình trạng tốt"
+              image:
+                type: string
+                example: "public/image_book_client/book_123.jpg"
+              id_user:
+                type: integer
+                example: 456
+              id_type_book:
+                type: integer
+                example: 5
+              status:
+                type: integer
+                example: 1
+              quantity:
+                type: integer
+                example: 2
+      400:
+        description: Search failed
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "Missing required parameters"
+    """
+    try:
+        # Lấy thêm trường id từ form-data
+        user_id = request.form.get('id')
+        name_book = request.form.get('name_book')
 
-#     # Lấy thêm trường id từ form-data
-#     user_id = request.form.get('id')
+        if not user_id:
+            return jsonify({"error": "Missing user id"}), 400
 
-#     if not user_id:
-#         return jsonify({"error": "Missing user id"}), 400
+        if not name_book:
+            return jsonify({"error": "Missing book name"}), 400
 
-#     # AI analysis (commented out until AI module is available)
-#     # text_output = scan_book(image_path)
-#     # books = exportData(...)
-    
-#     # Temporary: return all available books except user's own
-#     books = exportData(
-#         sql="""
-#             SELECT  
-#                 book.id, 
-#                 type_books.name_book, 
-#                 type_books.type_book, 
-#                 book.date_purchase, 
-#                 book.price, 
-#                 book.description, 
-#                 book.image,
-#                 book.id_user,
-#                 book.id_type_book,
-#                 book.status,
-#                 book.quantity
-#             FROM book 
-#             JOIN type_books ON book.id_type_book = type_books.id
-#             WHERE book.status = 1 AND book.quantity > 0 AND book.id_user != %s
-#             LIMIT 10
-#         """,
-#         val=(user_id,),
-#         fetch_all=True
-#     )
+        # Truy vấn dữ liệu sách dựa trên tên sách
+        books = exportData(
+            sql="""
+                SELECT  
+                    book.id, 
+                    type_books.name_book, 
+                    type_books.type_book, 
+                    book.date_purchase, 
+                    book.price, 
+                    book.description, 
+                    book.image,
+                    book.id_user,
+                    book.id_type_book,
+                    book.status,
+                    book.quantity
+                FROM book 
+                JOIN type_books ON book.id_type_book = type_books.id
+                WHERE book.status = 1 
+                AND book.quantity > 0 
+                AND type_books.name_book LIKE %s 
+                AND book.id_user != %s
+                ORDER BY book.created_at DESC
+                LIMIT 20
+            """,
+            val=(f"%{name_book}%", user_id),
+            fetch_all=True
+        )
 
-#     return jsonify(books), 200
+        return jsonify(books), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Search failed: {str(e)}"}), 400
 
 
 @book_bp.route('/insertBook', methods=['POST'])

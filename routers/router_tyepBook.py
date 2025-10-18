@@ -294,6 +294,80 @@ def exportTypeBook():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
+@type_book_bp.route('/upload_type_image_book', methods=['POST'])
+def uploadImageBook():
+    """
+    Upload book cover image
+    ---
+    tags:
+      - Type Book Management
+    consumes:
+      - multipart/form-data
+    parameters:
+      - name: image
+        in: formData
+        type: file
+        required: true
+        description: Book cover image to upload
+    responses:
+      200:
+        description: Image uploaded successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Upload successful"
+            file_path:
+              type: string
+              example: "public/image/book_20241010_123456_abc123.jpg"
+              description: "Relative path to uploaded image"
+      400:
+        description: Upload failed
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "No image file found"
+    """
+    try:
+        # Kiểm tra file ảnh
+        if 'image' not in request.files:
+            return jsonify({"error": "No image file found"}), 400
+
+        image = request.files['image']
+
+        if image.filename == '':
+            return jsonify({"error": "No selected file"}), 400
+
+        # Validate file extension
+        allowed_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp'}
+        ext = os.path.splitext(image.filename)[1].lower()
+        
+        if ext not in allowed_extensions:
+            return jsonify({"error": "Invalid file type. Allowed: jpg, jpeg, png, gif, bmp"}), 400
+
+        # Tạo tên file mới với timestamp và UUID
+        new_filename = f"book_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:6]}{ext}"
+
+        # Đảm bảo tên file an toàn
+        filename = secure_filename(new_filename)
+        image_path = os.path.join(PUBLIC_IMAGE_FOLDER, filename)
+        
+        # Lưu file ảnh
+        image.save(image_path)
+        
+        # Tạo relative path để trả về (không có dấu / ở đầu)
+        relative_path = f"public/image/{filename}"
+
+        return jsonify({
+            "message": "Upload successful",
+            "file_path": relative_path
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Upload failed: {str(e)}"}), 400
 
 @type_book_bp.route('/public/image/<path:filename>')
 def serve_image(filename):
