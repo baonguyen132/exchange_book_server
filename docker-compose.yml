@@ -1,13 +1,44 @@
-version: '3.8'
-
+version: "3.8"
 services:
-  flask-app:
+  api:
     build: .
     container_name: exchange_book_server
     ports:
       - "5000:5000"         # Map port host:container
-    env_file:
-      - .env                # Load biến môi trường EXCHANGE_BOOK_API_KEY
+    working_dir: /app
     volumes:
       - .:/app              # Mount code để dễ phát triển (live reload)
+    env_file:
+      - .env                # Load biến môi trường EXCHANGE_BOOK_API_KEY
     restart: unless-stopped # Tự restart khi container crash
+    depends_on:
+      - mysql-db          # Đảm bảo mysql-db chạy trước flask-app
+  mysql-db:
+    build: ./database
+    container_name: exchange_book_mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: exchange_book
+      MYSQL_USER: exchange_user
+      MYSQL_PASSWORD: exchange_pass
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./database:/docker-entrypoint-initdb.d:ro
+  phpMyAdmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql-db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root
+    depends_on:
+      - mysql-db
+volumes:
+  mysql-data:
+  n8n-data:
