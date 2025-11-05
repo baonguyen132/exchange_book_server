@@ -145,7 +145,7 @@ CREATE TABLE `type_books` (
   `type_book` varchar(100) NOT NULL,
   `price` int(11) NOT NULL,
   `image` varchar(100) NOT NULL,
-  `description` varchar(100) NOT NULL,
+  `description` varchar(10000) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_vietnamese_ci;
@@ -159,7 +159,9 @@ INSERT INTO `type_books` (`id`, `name_book`, `type_book`, `price`, `image`, `des
 (88, 'Vật lí 11 - Kết nối tri thức với cuộc sống', 'Sách lớp 11', 12000, 'public/image/book_20251026_054346_9fd0f7.png', 'Sách Vật lí lớp 11 thuộc bộ Kết nối tri thức với cuộc sống, cung cấp kiến thức cơ bản và nâng cao về', '2025-10-26 05:43:55', '2025-10-26 05:43:55'),
 (89, 'Chuyên đề học tập Lịch sử 10 - Kết nối tri thức với cuộc sống', 'Sách lớp 10', 10000, 'public/image/book_20251026_054459_a79d0a.png', 'Sách chuyên đề học tập Lịch sử lớp 10 thuộc bộ Kết nối tri thức với cuộc sống, cung cấp kiến thức ch', '2025-10-26 05:45:28', '2025-10-26 05:45:28'),
 (90, 'Âm nhạc 12 - Kết nối tri thức với cuộc sống', 'Sách lớp 12', 12000, 'public/image/book_20251026_054614_0be33a.jpg', 'Sách Âm nhạc lớp 12 thuộc bộ Kết nối tri thức với cuộc sống, giúp học sinh phát triển năng khiếu, ki', '2025-10-26 05:46:26', '2025-10-26 05:46:26'),
-(93, 'Chuyên đề học tập Vật lí 12 - Kết nối tri thức với cuộc sống', 'Sách lớp 12', 12000, 'public/image/book_20251026_055428_41eeb5.png', 'Sách Chuyên đề học tập Vật lí lớp 12 thuộc bộ Kết nối tri thức với cuộc sống, cung cấp kiến thức chu', '2025-10-26 05:54:37', '2025-10-26 05:54:37');
+(93, 'Chuyên đề học tập Vật lí 12 - Kết nối tri thức với cuộc sống', 'Sách lớp 12', 12000, 'public/image/book_20251026_055428_41eeb5.png', 'Sách Chuyên đề học tập Vật lí lớp 12 thuộc bộ Kết nối tri thức với cuộc sống, cung cấp kiến thức chu', '2025-10-26 05:54:37', '2025-10-26 05:54:37'),
+(94, 'Toán 12 (Tập Hai) - Kết nối tri thức với cuộc sống', 'Sách lớp 12', 10000, '', 'Sách Toán lớp 12 tập hai thuộc bộ Kết nối tri thức với cuộc sống, cung cấp kiến thức và bài tập về toán học nâng cao cho học sinh trung học phổ thông.', '2025-11-05 12:44:38', '2025-11-05 12:44:38'),
+(95, 'Toán 12 (Tập 1) - Kết nối tri thức với cuộc sống', 'Sách lớp 12', 10000, 'public/image/book_20251105_124459_111d0e.png', 'Sách Toán lớp 12 tập 1 thuộc bộ Kết nối tri thức với cuộc sống, cung cấp kiến thức và bài tập về toán học cho học sinh THPT, chuẩn bị cho kỳ thi tốt nghiệp và đại học.', '2025-11-05 12:45:05', '2025-11-05 12:45:05');
 
 -- --------------------------------------------------------
 
