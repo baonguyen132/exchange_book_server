@@ -229,11 +229,16 @@ def loadDataUser():
           type: object
           required:
             - id_user
+            - page
           properties:
             id_user:
               type: string
               example: "1"
               description: "User ID to exclude from results. Use '0' to get all users"
+            page:
+              type: integer
+              example: 1
+              description: "Page number for pagination"
     responses:
       200:
         description: Users data loaded successfully
@@ -255,22 +260,99 @@ def loadDataUser():
     """
     data = request.get_json()  # Nhận JSON từ Flutter
     idUser = data["id_user"]
+    page = data["page"]
 
-
+    limited = 20
+    start = (page - 1) * limited
+    
     try:
         if idUser == "0":
             user = exportData(
-                sql="SELECT * FROM users",
-                val=(),
+                sql="SELECT * FROM users LIMIT %s OFFSET %s",
+                val=(limited, start),
                 fetch_all=True
             )
         else:
             user = exportData(
-                sql="SELECT * FROM users WHERE id <> %s",
-                val=(idUser,),
+                sql="SELECT * FROM users WHERE id <> %s LIMIT %s OFFSET %s",
+                val=(idUser, limited, start),
                 fetch_all=True
             )
-        print(user)
+        return jsonify(user), 200
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 400
+    
+@user_bp.route('/loadDataUserAddress', methods=['POST'])
+def loadDataUserAddress():
+    """
+    Load users data (all users or exclude specific user) with address filter
+    ---
+    tags:
+      - User Management
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          required:
+            - id_user
+            - page
+            - address
+          properties:
+            id_user:
+              type: string
+              example: "1"
+              description: "User ID to exclude from results. Use '0' to get all users"
+            page:
+              type: integer
+              example: 1
+              description: "Page number for pagination"
+            address:
+              type: string
+              example: "Hanoi"
+              description: "Address filter for users"
+    responses:
+      200:
+        description: Users data loaded successfully
+        schema:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+            example: ["1", "John Doe", "user@example.com", "password123", "active", "123456789", "1990-01-01", "male", "Hanoi", "address", "100", "token123", "2023-01-01", "2023-01-01"]
+      400:
+        description: Failed to load users data
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: "Database error"
+    """
+    data = request.get_json()  # Nhận JSON từ Flutter
+    idUser = data["id_user"]
+    page = data["page"]
+    address = data["address"]
+
+    limited = 20
+    start = (page - 1) * limited
+    
+    try:
+        like_address = f"%{address.lower()}%"
+        user = exportData(
+            sql="""
+                SELECT *
+                FROM users
+                WHERE id <> %s AND LOWER(address) LIKE %s
+                LIMIT %s OFFSET %s
+            """,
+            val=(idUser, like_address, limited, start),
+            fetch_all=True
+        )
         return jsonify(user), 200
 
     except Exception as e:
