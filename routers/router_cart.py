@@ -7,26 +7,24 @@ from services.connectDatabase import importData, exportData, importDataGetId
 
 cart_bp = Blueprint('cart', __name__)
 
-@cart_bp.route("/export_cart_purchase", methods=['POST'])
-def export_cart_purchase():
+@cart_bp.route("/export_cart_purchase/<int:idUser>/<int:page>", methods=['GET'])
+def export_cart_purchase(idUser, page):
     """
     Get purchase cart history for user
     ---
     tags:
       - Cart Management
     parameters:
-      - name: body
-        in: body
+      - name: idUser
+        in: path
+        type: integer
         required: true
-        schema:
-          type: object
-          required:
-            - id_user
-          properties:
-            id_user:
-              type: string
-              example: "1"
-              description: "User ID to get purchase history"
+        description: "User ID to get purchase cart history"
+      - name: page
+        in: path
+        type: integer
+        required: true
+        description: "Page number for pagination"
     responses:
       200:
         description: Purchase cart history retrieved successfully
@@ -38,7 +36,8 @@ def export_cart_purchase():
               type: string
             example: ["1", "Xác nhận đơn", "123 Main Street", "50000", "Seller Name"]
     """
-    data = request.get_json()
+    limit = 20
+    offset = (page - 1) * limit
 
     list = exportData(
         sql="""
@@ -50,32 +49,33 @@ def export_cart_purchase():
             users.name 
         FROM `cart` JOIN users 
         ON cart.id_seller = users.id 
-        WHERE cart.id_user = %s """,
-        val=(data["id_user"],),
+        WHERE cart.id_user = %s 
+        ORDER BY cart.created_at DESC
+        LIMIT %s OFFSET %s
+        """,
+        val=(idUser, limit, offset),
         fetch_all=True
     )
     return jsonify(list), 200
 
-@cart_bp.route("/export_cart_seller", methods=['POST'])
-def export_cart_seller():
+@cart_bp.route("/export_cart_seller/<int:idUser>/<int:page>", methods=['GET'])
+def export_cart_seller(idUser, page):
     """
     Get seller cart history
     ---
     tags:
       - Cart Management
     parameters:
-      - name: body
-        in: body
+      - name: idUser
+        in: path
+        type: integer
         required: true
-        schema:
-          type: object
-          required:
-            - id_user
-          properties:
-            id_user:
-              type: string
-              example: "1"
-              description: "Seller ID to get cart history"
+        description: "Seller User ID to get cart history"
+      - name: page
+        in: path
+        type: integer
+        required: true
+        description: "Page number for pagination"
     responses:
       200:
         description: Seller cart history retrieved successfully
@@ -87,7 +87,10 @@ def export_cart_seller():
               type: string
             example: ["1", "Xác nhận đơn", "123 Main Street", "50000", "Buyer Name"]
     """
-    data = request.get_json()
+
+    limit = 20
+    offset = (page - 1) * limit
+  
 
     list = exportData(
         sql="""
@@ -99,8 +102,11 @@ def export_cart_seller():
             users.name 
         FROM `cart` JOIN users 
         ON cart.id_user = users.id 
-        WHERE cart.id_seller = %s """,
-        val=(data["id_user"],),
+        WHERE cart.id_seller = %s 
+        ORDER BY cart.created_at DESC
+        LIMIT %s OFFSET %s
+        """,
+        val=(idUser, limit, offset),
         fetch_all=True
     )
 
