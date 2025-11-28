@@ -191,7 +191,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `status`, `cccd`, `dob`, `gender`, `pob`, `address`, `point`, `token`, `created_at`, `updated_at`) VALUES
-(15, 'Hồ Bảo Nguyên', 'nguyenhb.22it@vku.udn.vn', 'NguyenBao-132', 5, '048204007137', '2004-02-13', 'Male', '', 'Tổ 33, Hòa Quý, Ngũ Hành Sơn, Đà Nẵng', 417910, 'some_token', '2025-02-21 14:44:42', '2025-02-21 14:44:42'),
+(15, 'Hồ Bảo Nguyên', 'nguyenhb.22it@vku.udn.vn', 'NguyenBao-2004', 5, '048204007137', '2004-02-13', 'Male', '', 'Tổ 33, Hòa Quý, Ngũ Hành Sơn, Đà Nẵng', 417910, 'some_token', '2025-02-21 14:44:42', '2025-02-21 14:44:42'),
 (17, 'Hồ Thăng Bản', 'baonguyen182pht@gmail.com', '1234', 4, '048066007160', '1966-01-01', 'Male', '', 'Tổ 33, Hòa Quý, Ngũ Hành Sơn, Hồ Chí Minh', 32299, 'some_token', '2025-05-02 03:31:21', '2025-05-02 03:31:21'),
 (20, 'Trần Lê Hoàng Long', 'longtran201014@gmail.com', 'HoangLong-123', 4, '048210003173', '2010-10-01', 'Male', '', 'Thôn Phú Sơn Nam, Hòa Khương, Hòa Vang, Đà Nẵng', 42925, 'some_token', '2025-09-15 04:23:54', '2025-09-15 04:23:54'),
 (21, 'Nguyễn Khánh My', 'khongiantopo@gmail.com', 'KhanhMy-123', 4, '048195008281', '1995-01-01', 'Female', '', 'Tổ 1 thôn yến nê 1, Hòa Tiến, Hòa Vang, Đà Nẵng', 29210, 'some_token', '2025-10-03 04:16:29', '2025-10-03 04:16:29'),
