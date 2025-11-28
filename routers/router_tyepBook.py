@@ -225,13 +225,20 @@ def deleteTypeBook():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-@type_book_bp.route("/exportTypeBook", methods=['GET'])
-def exportTypeBook():
+@type_book_bp.route("/exportTypeBook/<int:page>", methods=['GET'])
+def exportTypeBook(page):
     """
     Get all book types
     ---
     tags:
       - Type Book Management
+    parameters:
+      - name: page
+        in: path
+        type: integer
+        required: true
+        description: "Page number for pagination (currently not used)"
+        example: 1
     responses:
       200:
         description: List of all book types
@@ -283,10 +290,14 @@ def exportTypeBook():
               type: string
               example: "Error details"
     """
+
+    limit = 10
+    offset = (page - 1) * limit
+
     try:
         list = exportData(
-            sql="SELECT * FROM `type_books` WHERE 1",
-            val=(),
+            sql="SELECT * FROM `type_books` WHERE 1 LIMIT %s OFFSET %s",
+            val=(limit, offset),
             fetch_all=True
         )
 
