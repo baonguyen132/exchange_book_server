@@ -14,7 +14,7 @@ services:
     depends_on:
       - mysql-db          # Đảm bảo mysql-db chạy trước flask-app
   mysql-db:
-    build: ./database
+    image: mysql:8.0
     container_name: exchange_book_mysql
     restart: always
     ports:
