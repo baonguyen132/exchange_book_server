@@ -14,7 +14,13 @@ from routers.router_image import image_bp
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(
+    app,
+    origins="*",
+    allow_headers="*",
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    supports_credentials=False
+)
 
 # Swagger configuration
 swagger_config = {

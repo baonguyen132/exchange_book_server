@@ -214,8 +214,7 @@ def transfer():
         id_user_from = data.get('idUser')
 
         # --- Kiểm tra đầu vào cơ bản ---
-        if not address:
-            return jsonify({"error": "Địa chỉ người nhận không được để trống"}), 400
+        
         if not id_user_from:
             return jsonify({"error": "Thiếu ID người gửi"}), 400
         if point <= 0:
@@ -250,7 +249,7 @@ def transfer():
         list_id = [receiver[0] for receiver in receivers]
 
         # --- Kiểm tra đủ điểm để chia ---
-        total_transfer = point * len(list_id)
+        total_transfer = point 
         if current_point < total_transfer:
             return jsonify({"error": "Không đủ điểm để chuyển"}), 400
 
@@ -264,7 +263,7 @@ def transfer():
         for receiver_id in list_id:
             importData(
                 sql="UPDATE `users` SET `point` = `point` + %s WHERE `id` = %s",
-                val=(point, receiver_id)
+                val=(int(point / len(list_id)), receiver_id)
             )
 
         # --- Trả kết quả ---
