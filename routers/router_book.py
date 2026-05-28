@@ -310,26 +310,26 @@ def insertBook():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-@book_bp.route("/exportMyBook", methods=['POST'])
-def exportMyBook():
+@book_bp.route("/exportMyBook/<int:idUser>/<int:page>", methods=['GET'])
+def exportMyBook(idUser, page):
     """
     Get user's own book listings
     ---
     tags:
       - Book Management
     parameters:
-      - name: body
-        in: body
+      - name: idUser
+        in: path
+        type: integer
         required: true
-        schema:
-          type: object
-          required:
-            - id_user
-          properties:
-            id_user:
-              type: integer
-              example: 123
-              description: "User ID to get books for"
+        description: User ID whose books to retrieve
+        example: 123
+      - name: page
+        in: path
+        type: integer
+        required: true
+        description: Page number for pagination
+        example: 1
     responses:
       200:
         description: User's books retrieved successfully
@@ -372,10 +372,12 @@ def exportMyBook():
                 type: integer
                 example: 2
     """
-    data = request.get_json()
+    limit = 20
+    offset = (page - 1) * limit
 
     list = exportData(
-        sql="""SELECT  
+        sql="""
+        SELECT  
         book.id, 
         type_books.name_book, 
         type_books.type_book, 
@@ -388,33 +390,36 @@ def exportMyBook():
         book.status,
         book.quantity
         FROM book JOIN type_books ON book.id_type_book = type_books.id 
-        WHERE book.id_user = %s""",
-        val=(data["id_user"],),
+        WHERE book.id_user = %s
+        ORDER BY book.created_at DESC
+        LIMIT %s OFFSET %s
+        """,
+        val=(idUser, limit, offset),
         fetch_all=True
     )
 
     return jsonify(list), 200
 
-@book_bp.route("/exportBook", methods=['POST'])
-def exportBook():
+@book_bp.route("/exportBook/<int:idUser>/<int:page>", methods=['GET'])
+def exportBook(idUser, page):
     """
     Get available books from other users
     ---
     tags:
       - Book Management
     parameters:
-      - name: body
-        in: body
+      - name: idUser
+        in: path
+        type: integer
         required: true
-        schema:
-          type: object
-          required:
-            - id_user
-          properties:
-            id_user:
-              type: integer
-              example: 123
-              description: "Current user ID (to exclude from results)"
+        description: User ID to exclude from results
+        example: 123
+      - name: page
+        in: path
+        type: integer
+        required: true
+        description: Page number for pagination
+        example: 1
     responses:
       200:
         description: Available books from other users
@@ -457,7 +462,9 @@ def exportBook():
                 type: integer
                 example: 2
     """
-    data = request.get_json()
+
+    limit = 20
+    offset = (page - 1) * limit
 
     books = exportData(
         sql="""
@@ -476,8 +483,10 @@ def exportBook():
             FROM book 
             JOIN type_books ON book.id_type_book = type_books.id
             WHERE book.status = 1 AND book.quantity > 0 AND book.id_user != %s
+            ORDER BY book.created_at DESC
+            LIMIT %s OFFSET %s
         """,
-        val=(data["id_user"], ),
+        val=(idUser, limit, offset),
         fetch_all=True
     )
 

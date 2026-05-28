@@ -168,18 +168,18 @@ def transfer():
         schema:
           type: object
           required:
-            - listId
-            - totalPoint
+            - address
+            - point
             - idUser
           properties:
-            listId:
+            address:
               type: string
-              example: "2_3_4"
-              description: "List of receiver user IDs separated by underscore"
-            totalPoint:
+              example: "123 Main St"
+              description: "Address of the receivers"
+            point:
               type: integer
               example: 100
-              description: "Total points to distribute"
+              description: "Points to give each receiver"
             idUser:
               type: string
               example: "1"
@@ -193,6 +193,10 @@ def transfer():
             message:
               type: string
               example: "Chuyển điểm thành công"
+            current_points:
+              type: integer
+              example: 800
+              description: "Remaining points of sender"
       400:
         description: Transfer failed
         schema:
@@ -200,61 +204,78 @@ def transfer():
           properties:
             error:
               type: string
-              enum: ["Danh sách người nhận trống", "Số điểm quá nhỏ để chia", "Người gửi không tồn tại", "Không đủ điểm để chuyển"]
+              enum: ["Địa chỉ người nhận không được để trống", "Người gửi không tồn tại", "Danh sách người nhận trống", "Số điểm quá nhỏ để chia", "Không đủ điểm để chuyển"]
               example: "Không đủ điểm để chuyển"
     """
     try:
         data = request.get_json()
+        address = data.get('address', '').strip()
+        point = int(data.get('point', 0))
+        id_user_from = data.get('idUser')
 
-        list_id_raw = data.get('listId', '')
-        total_point = data.get('totalPoint', 0)
-        id_user_from = (data.get('idUser'))
+        # --- Kiểm tra đầu vào cơ bản ---
+        
+        if not id_user_from:
+            return jsonify({"error": "Thiếu ID người gửi"}), 400
+        if point <= 0:
+            return jsonify({"error": "Số điểm phải lớn hơn 0"}), 400
 
-        # Chuyển từ chuỗi sang list số nguyên
-        list_id = [int(x.strip()) for x in list_id_raw.split('_') if x.strip().isdigit()]
-
-        if not list_id:
-            return jsonify({"error": "Danh sách người nhận trống"}), 400
-
-        point_per_person = total_point // len(list_id)
-        remainder = total_point % len(list_id)
-
-        if point_per_person == 0:
-            return jsonify({"error": "Số điểm quá nhỏ để chia"}), 400
-
-        # Kiểm tra điểm hiện tại của người gửi
+        # --- Kiểm tra người gửi có tồn tại không ---
         user_point_data = exportData(
             sql="SELECT `point` FROM `users` WHERE `id` = %s",
-            val=(id_user_from,),
+            val=(id_user_from,)
         )
-
         if not user_point_data:
             return jsonify({"error": "Người gửi không tồn tại"}), 400
 
         current_point = int(user_point_data[0])
 
-        if current_point < total_point:
-            return jsonify({"error": "Không đủ điểm để chuyển"}), 400
-
-        # Trừ điểm người gửi
-        importData(
-            sql="UPDATE `users` SET `point` = `point` - %s WHERE `id` = %s",
-            val=(total_point, id_user_from)
+        # --- Lấy danh sách người nhận ---
+        like_address = f"%{address.lower()}%"
+        receivers = exportData(
+            sql="""
+                SELECT id
+                FROM users
+                WHERE LOWER(address) LIKE %s
+                  AND id <> %s
+            """,
+            val=(like_address, id_user_from),
+            fetch_all=True
         )
 
-        # Cộng điểm cho người nhận
-        for idx, receiver_id in enumerate(list_id):
-            points = point_per_person + (1 if idx < remainder else 0)
+        if not receivers:
+            return jsonify({"error": "Danh sách người nhận trống"}), 400
+
+        list_id = [receiver[0] for receiver in receivers]
+
+        # --- Kiểm tra đủ điểm để chia ---
+        total_transfer = point 
+        if current_point < total_transfer:
+            return jsonify({"error": "Không đủ điểm để chuyển"}), 400
+
+        # --- Bắt đầu giao dịch ---
+        # (Nếu bạn dùng MySQL connector, bạn có thể mở transaction để rollback khi lỗi)
+        importData(
+            sql="UPDATE `users` SET `point` = `point` - %s WHERE `id` = %s",
+            val=(total_transfer, id_user_from)
+        )
+
+        for receiver_id in list_id:
             importData(
                 sql="UPDATE `users` SET `point` = `point` + %s WHERE `id` = %s",
-                val=(points, receiver_id)
+                val=(int(point / len(list_id)), receiver_id)
             )
 
-        return jsonify({"message": "Chuyển điểm thành công"}), 200
+        # --- Trả kết quả ---
+        return jsonify({
+            "message": f"Chuyển điểm thành công đến {len(list_id)} người nhận",
+            "current_points": current_point - total_transfer
+        }), 200
 
     except Exception as e:
-        print("Lỗi khi chuyển điểm:", e)
+        print("Error in transfer:", e)
         return jsonify({"error": str(e)}), 400
+
 
 @transaction.route('/transferOnePerson', methods=['POST'])
 def transferOnePerson():
